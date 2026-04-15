@@ -1,5 +1,5 @@
 app:
-  namespace: app1-ns
+  namespace: kt
 
 image:
   repository: nginx
