@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-jmeter-dashboard
+  name: {{ .Release.Name }}-config
   namespace: {{ .Values.app.namespace }}
 data:
   index.html: |
