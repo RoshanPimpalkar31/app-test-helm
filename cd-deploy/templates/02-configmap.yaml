@@ -10,7 +10,7 @@ data:
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>AtlasVis Deployment Hub</title>
+      <title>DevOps Central</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -197,7 +197,7 @@ data:
       
       <div class="container">
         <header>
-          <h1 class="logo">⚡ AtlasVis</h1>
+          <h1 class="logo">⚙️ DevOps Central</h1>
           <p class="subtitle">Deployment Automation Hub</p>
           <span class="status-badge">● All Systems Operational</span>
         </header>
@@ -248,7 +248,7 @@ data:
         </div>
         
         <footer>
-          <p>AtlasVis DevOps • Powered by Kubernetes & ArgoCD</p>
+          <p>DevOps Central • Powered by Kubernetes & ArgoCD</p>
           <p style="margin-top: 0.5rem; color: #3a4250;">v1.0.0</p>
         </footer>
       </div>
