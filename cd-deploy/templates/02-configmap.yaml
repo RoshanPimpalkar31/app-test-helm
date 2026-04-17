@@ -1,210 +1,525 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-config
+  name: {{ .Release.Name }}-jmeter-dashboard
   namespace: {{ .Values.app.namespace }}
 data:
   index.html: |
     <!DOCTYPE html>
-<!-- saved from url=(0052)http://127.0.0.1:3000/results/html_report/index.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript" src="./cacheOff_files/___vscode_livepreview_injected_script"></script>
-
-    
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Apache JMeter Dashboard</title>
-
-     <!-- Bootstrap Core CSS -->
-    <link href="./cacheOff_files/bootstrap.min.css" rel="stylesheet">
-
-    <!-- MetisMenu CSS -->
-    <link href="./cacheOff_files/metisMenu.min.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link href="./cacheOff_files/sb-admin-2.css" rel="stylesheet">
-
-    <!-- Dashboard css -->
-    <link href="./cacheOff_files/dashboard.css" rel="stylesheet">
-
-    <!-- Table sorter -->
-    <link href="./cacheOff_files/theme.blue.css" rel="stylesheet">
-
-    <!-- icon -->
-    <link rel="icon" type="image/png" href="http://127.0.0.1:3000/results/html_report/content/pages/icon-apache.png">
-
-    <!-- Custom Fonts -->
-    <link href="./cacheOff_files/font-awesome.min.css" rel="stylesheet" type="text/css">
-</head>
-
-<body>
-    <div id="wrapper">
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Apache JMeter Dashboard</title>
+      
+      <!-- Bootstrap & Font Awesome from CDN -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+      
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          min-height: 100vh;
+          color: #e0e0e0;
+        }
+        
+        .navbar {
+          background: rgba(0, 0, 0, 0.3) !important;
+          border: none;
+          backdrop-filter: blur(10px);
+        }
+        
+        .navbar-brand {
+          color: #00d9ff !important;
+          font-weight: 700;
+          font-size: 1.4rem;
+        }
+        
+        .sidebar-nav li a {
+          color: #8892b0 !important;
+          transition: all 0.3s;
+        }
+        
+        .sidebar-nav li a:hover,
+        .sidebar-nav li a.active {
+          background: rgba(0, 217, 255, 0.1) !important;
+          color: #00d9ff !important;
+          border-left: 3px solid #00d9ff;
+        }
+        
+        #page-wrapper {
+          background: transparent;
+          padding: 20px;
+          margin-left: 250px;
+        }
+        
+        .panel {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          margin-bottom: 20px;
+        }
+        
+        .panel-heading {
+          background: rgba(0, 217, 255, 0.1) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px 12px 0 0;
+        }
+        
+        .dashboard-title {
+          color: #00d9ff;
+          font-weight: 600;
+          font-size: 1.1rem;
+          margin: 0;
+        }
+        
+        .dashboard-title a {
+          color: #00d9ff;
+          text-decoration: none;
+        }
+        
+        .panel-body {
+          background: transparent;
+        }
+        
+        .table {
+          color: #e0e0e0;
+        }
+        
+        .table-bordered {
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table-bordered > thead > tr > th,
+        .table-bordered > tbody > tr > th,
+        .table-bordered > tbody > tr > td {
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .table-bordered > thead > tr > th {
+          background: rgba(0, 217, 255, 0.15);
+          color: #00d9ff;
+          font-weight: 600;
+        }
+        
+        .table tbody tr:hover td {
+          background: rgba(0, 217, 255, 0.1);
+        }
+        
+        /* Status indicators */
+        .status-pass { color: #00ff88; font-weight: bold; }
+        .status-fail { color: #ff6b6b; font-weight: bold; }
+        
+        /* Apdex coloring */
+        .apdex-excellent { color: #00ff88; }
+        .apdex-good { color: #7fff00; }
+        .apdex-fair { color: #ffd000; }
+        .apdex-poor { color: #ff8c00; }
+        .apdex-unacceptable { color: #ff6b6b; }
+        
+        /* Summary cards */
+        .summary-card {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          margin-bottom: 15px;
+        }
+        
+        .summary-card .value {
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #00d9ff;
+        }
+        
+        .summary-card .label {
+          color: #8892b0;
+          font-size: 0.9rem;
+          margin-top: 5px;
+        }
+        
+        .summary-card.success .value { color: #00ff88; }
+        .summary-card.warning .value { color: #ffd000; }
+        .summary-card.danger .value { color: #ff6b6b; }
+        
+        /* Pie chart container */
+        .pie-container {
+          width: 200px;
+          height: 200px;
+          margin: 0 auto;
+          position: relative;
+        }
+        
+        .pie-chart {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: conic-gradient(#00ff88 0% 100%, #ff6b6b 100% 100%);
+          position: relative;
+        }
+        
+        .pie-center {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: #1a1a2e;
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .pie-center .percentage {
+          font-size: 1.8rem;
+          font-weight: 700;
+          color: #00ff88;
+        }
+        
+        .pie-center .label {
+          font-size: 0.8rem;
+          color: #8892b0;
+        }
+        
+        /* Sidebar */
+        .navbar-default .sidebar {
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(10px);
+        }
+        
+        @media(min-width:768px) {
+          .navbar-static-side {
+            position: fixed;
+            width: 250px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div id="wrapper">
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="http://127.0.0.1:3000/results/html_report/index.html">Apache JMeter Dashboard</a>
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+              <i class="fa fa-dashboard"></i> Apache JMeter Dashboard
+            </a>
+          </div>
+          
+          <div class="navbar-default sidebar" role="navigation">
+            <div class="sidebar-nav navbar-collapse">
+              <ul class="nav" id="side-menu">
+                <li>
+                  <a href="#" class="active"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                </li>
+                <li>
+                  <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i> Charts <span class="fa arrow"></span></a>
+                  <ul class="nav nav-second-level collapse">
+                    <li><a href="#">Over Time</a></li>
+                    <li><a href="#">Throughput</a></li>
+                    <li><a href="#">Response Times</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a href="#"><i class="fa fa-line-chart fa-fw"></i> Custom Graphs</a>
+                </li>
+              </ul>
             </div>
-            <div class="navbar-default sidebar" role="navigation">
-                <div class="sidebar-nav navbar-collapse">
-                    <ul class="nav in" id="side-menu">
-                        <li>
-                            <a href="http://127.0.0.1:3000/results/html_report/index.html" class="active"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
-                        </li>
-                        <li>
-                            <a href="http://127.0.0.1:3000/results/html_report/index.html#"><i class="fa fa-bar-chart-o fa-fw"></i> Charts<span class="fa arrow"></span></a>
-                            <ul class="nav nav-second-level collapse">
-                                <li>
-                                    <a href="http://127.0.0.1:3000/results/html_report/content/pages/OverTime.html">Over Time</a>
-                                </li>
-                                <li>
-                                    <a href="http://127.0.0.1:3000/results/html_report/content/pages/Throughput.html">Throughput</a>
-                                </li>
-                                <li>
-                                    <a href="http://127.0.0.1:3000/results/html_report/content/pages/ResponseTimes.html">Response Times</a>
-                                </li>
-                            </ul>
-                            <!-- /.nav-second-level -->
-                        </li>
-                        
-                        <li>
-                            <a href="http://127.0.0.1:3000/results/html_report/index.html#"><i class="fa fa-bar-chart-o fa-fw"></i> Customs Graphs<span class="fa arrow"></span></a>
-                            <ul class="nav nav-second-level collapse">
-                                <li>
-                                    <a href="http://127.0.0.1:3000/results/html_report/content/pages/CustomsGraphs.html">Over Time</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+          </div>
         </nav>
+        
         <div id="page-wrapper">
-            <div class="row">
-                <div class="col-lg-12">
-                     <div class="panel panel-default">
-                        <div class="panel-heading" style="text-align:center;">
-                           <p class="dashboard-title">Test and Report information</p>
-                        </div>
-                        <div class="panel-body">
-                        <table id="generalInfos" class="table table-bordered table-condensed ">
-                            <tbody><tr>
-                                <td>Source file</td>
-                                <td>"Visualization.jtl"</td>
-                            </tr>
-                            <tr>
-                                <td>Start Time</td>
-                                <td>"4/17/26, 2:16 PM"</td>
-                            </tr>
-                            <tr>
-                                <td>End Time</td>
-                                <td>"4/17/26, 2:18 PM"</td>
-                            </tr>
-                                <tr>
-                                    <td>Filter for display</td>
-                                    <td>""</td>
-                                </tr>
-                        </tbody></table>
-                     </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="panel panel-default" style="text-align:center;">
-                        <div class="panel-heading">
-                           <p class="dashboard-title"><a href="https://en.wikipedia.org/wiki/Apdex" target="_blank">APDEX (Application Performance Index)</a></p>
-                        </div>
-                        <div class="panel-body">
-                            <section id="apdex" class="col-md-12 table-responsive">
-                                <table id="apdexTable" class="table table-bordered table-condensed tablesorter tablesorter-blue" role="grid"><colgroup class="tablesorter-colgroup"><col style="width: 16.5%;"><col style="width: 19.9%;"><col style="width: 20.7%;"><col style="width: 34.9%;"></colgroup>
-                                <thead><tr role="row" class="tablesorter-headerRow"><th data-column="0" class="tablesorter-header tablesorter-headerAsc" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="apdexTable" unselectable="on" aria-sort="ascending" aria-label="Apdex: Ascending sort applied, activate to apply a descending sort" style="user-select: none;"><div class="tablesorter-header-inner">Apdex</div></th><th data-column="1" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="apdexTable" unselectable="on" aria-sort="none" aria-label="T (Toleration threshold): No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">T (Toleration threshold)</div></th><th data-column="2" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="apdexTable" unselectable="on" aria-sort="none" aria-label="F (Frustration threshold): No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">F (Frustration threshold)</div></th><th data-column="3" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="apdexTable" unselectable="on" aria-sort="none" aria-label="Label: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Label</div></th></tr></thead><tbody class="tablesorter-no-sort"><tr role="row"><td>0.318</td><td>500 ms</td><td>1 sec 500 ms</td><td>Total</td></tr></tbody><tbody aria-live="polite" aria-relevant="all"><tr role="row" class="odd"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>GETJOBDATA</td></tr><tr role="row" class="even"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>DMLOGINWBSSESSION</td></tr><tr role="row" class="odd"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>DMLOGOUTWBSSESSION</td></tr><tr role="row" class="even"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>GENERATEACCESSTOKEN</td></tr><tr role="row" class="odd"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>CREATEWBSSESSION</td></tr><tr role="row" class="even"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>LOADPART</td></tr><tr role="row" class="odd"><td>0.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>GETCONTEXTID</td></tr><tr role="row" class="even"><td>0.500</td><td>500 ms</td><td>1 sec 500 ms</td><td>DELETEWBSSESSION</td></tr><tr role="row" class="odd"><td>1.000</td><td>500 ms</td><td>1 sec 500 ms</td><td>Debug Sampler</td></tr></tbody></table>
-                            </section>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="panel panel-default" style="text-align:center;">
-                        <div class="panel-heading">
-                           <p class="dashboard-title">Requests Summary</p>
-                        </div>
-                           <div class="panel-body">
-                            <div class="flot-chart" style="height:200px;">
-                                <div class="flot-chart-content" id="flot-requests-summary" style="height: 200px; padding: 0px; position: relative;">
-                            <canvas class="flot-base" width="641" height="200" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 641px; height: 200px;"></canvas><canvas class="flot-overlay" width="641" height="200" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 641px; height: 200px;"></canvas><div class="legend"><div style="position: absolute; width: 44.25px; height: 33.3438px; top: 5px; right: 5px; background-color: rgb(255, 255, 255); opacity: 0.85;"> </div><table style="position:absolute;top:5px;right:5px;;font-size:smaller;color:#545454"><tbody><tr><td class="legendColorBox"><div style="border:1px solid #ccc;padding:1px"><div style="width:4px;height:0;border:5px solid #FF6347;overflow:hidden"></div></div></td><td class="legendLabel">FAIL</td></tr><tr><td class="legendColorBox"><div style="border:1px solid #ccc;padding:1px"><div style="width:4px;height:0;border:5px solid #9ACD32;overflow:hidden"></div></div></td><td class="legendLabel">PASS</td></tr></tbody></table></div><div class="pieLabelBackground" style="position: absolute; width: 31.6562px; height: 34.4688px; top: 157.766px; left: 282.547px; background-color: rgb(0, 0, 0); opacity: 0.5;"></div><span class="pieLabel" id="pieLabel1" style="position: absolute; top: 157.766px; left: 282.547px;"><div style="font-size:8pt;text-align:center;padding:2px;color:white;">PASS<br>100%</div></span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <!-- Test Info -->
+          <div class="row">
             <div class="col-lg-12">
-                <div class="panel panel-default" style="text-align:center;">
-                       <div class="panel-heading">
-                           <p class="dashboard-title">Statistics</p>
-                       </div>
-                <div class="panel-body ">
-                    <section class="col-md-12 table-responsive">
-                        <table id="statisticsTable" class="table table-bordered table-condensed tablesorter tablesorter-blue" role="grid"><colgroup class="tablesorter-colgroup"><col style="width: 14.6%;"><col style="width: 6.5%;"><col style="width: 4.3%;"><col style="width: 4.5%;"><col style="width: 5.8%;"><col style="width: 4.4%;"><col style="width: 4.4%;"><col style="width: 5.8%;"><col style="width: 5.8%;"><col style="width: 5.8%;"><col style="width: 5.8%;"><col style="width: 8.5%;"><col style="width: 6.2%;"><col style="width: 4.3%;"></colgroup>
-                        <thead><tr class="tablesorter-no-sort tablesorter-headerRow" role="row"><th data-sorter="false" colspan="1" data-column="0" class="tablesorter-header sorter-false tablesorter-headerUnSorted" scope="col" role="columnheader" aria-disabled="true" unselectable="on" aria-sort="none" style="user-select: none;"><div class="tablesorter-header-inner">Requests</div></th><th data-sorter="false" colspan="3" data-column="1" class="tablesorter-header sorter-false tablesorter-headerUnSorted" scope="col" role="columnheader" aria-disabled="true" unselectable="on" aria-sort="none" style="user-select: none;"><div class="tablesorter-header-inner">Executions</div></th><th data-sorter="false" colspan="7" data-column="4" class="tablesorter-header sorter-false tablesorter-headerUnSorted" scope="col" role="columnheader" aria-disabled="true" unselectable="on" aria-sort="none" style="user-select: none;"><div class="tablesorter-header-inner">Response Times (ms)</div></th><th data-sorter="false" colspan="1" data-column="11" class="tablesorter-header sorter-false tablesorter-headerUnSorted" scope="col" role="columnheader" aria-disabled="true" unselectable="on" aria-sort="none" style="user-select: none;"><div class="tablesorter-header-inner">Throughput</div></th><th data-sorter="false" colspan="2" data-column="12" class="tablesorter-header sorter-false tablesorter-headerUnSorted" scope="col" role="columnheader" aria-disabled="true" unselectable="on" aria-sort="none" style="user-select: none;"><div class="tablesorter-header-inner">Network (KB/sec)</div></th></tr><tr role="row" class="tablesorter-headerRow"><th data-column="0" class="tablesorter-header tablesorter-headerAsc" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="ascending" aria-label="Label: Ascending sort applied, activate to apply a descending sort" style="user-select: none;"><div class="tablesorter-header-inner">Label</div></th><th data-column="1" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="#Samples: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Samples</div></th><th data-column="2" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="FAIL: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">FAIL</div></th><th data-column="3" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Error %: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Error %</div></th><th data-column="4" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Average: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Average</div></th><th data-column="5" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Min: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Min</div></th><th data-column="6" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Max: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Max</div></th><th data-column="7" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Median: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Median</div></th><th data-column="8" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="90th pct: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">90th pct</div></th><th data-column="9" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="95th pct: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">95th pct</div></th><th data-column="10" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="99th pct: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">99th pct</div></th><th data-column="11" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Transactions/s: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Transactions/s</div></th><th data-column="12" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Received: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Received</div></th><th data-column="13" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="statisticsTable" unselectable="on" aria-sort="none" aria-label="Sent: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Sent</div></th></tr></thead><tbody class="tablesorter-no-sort"><tr role="row"><td>Total</td><td>11</td><td>0</td><td>0.00%</td><td>12414.18</td><td>0</td><td>56584</td><td>3984.00</td><td>55301.40</td><td>56584.00</td><td>56584.00</td><td>0.09</td><td>0.28</td><td>0.13</td></tr></tbody><tbody aria-live="polite" aria-relevant="all"><tr role="row" class="odd"><td>CREATEWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td><td>1650.00</td><td>1650</td><td>1650</td><td>1650.00</td><td>1650.00</td><td>1650.00</td><td>1650.00</td><td>0.61</td><td>0.88</td><td>1.60</td></tr><tr role="row" class="even"><td>Debug Sampler</td><td>3</td><td>0</td><td>0.00%</td><td>2.00</td><td>0</td><td>5</td><td>1.00</td><td>5.00</td><td>5.00</td><td>5.00</td><td>0.04</td><td>0.05</td><td>0.00</td></tr><tr role="row" class="odd"><td>DELETEWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td><td>801.00</td><td>801</td><td>801</td><td>801.00</td><td>801.00</td><td>801.00</td><td>801.00</td><td>1.25</td><td>1.67</td><td>3.29</td></tr><tr role="row" class="even"><td>DMLOGINWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td><td>8985.00</td><td>8985</td><td>8985</td><td>8985.00</td><td>8985.00</td><td>8985.00</td><td>8985.00</td><td>0.11</td><td>0.16</td><td>0.29</td></tr><tr role="row" class="odd"><td>DMLOGOUTWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td><td>4655.00</td><td>4655</td><td>4655</td><td>4655.00</td><td>4655.00</td><td>4655.00</td><td>4655.00</td><td>0.21</td><td>0.26</td><td>0.56</td></tr><tr role="row" class="even"><td>GENERATEACCESSTOKEN</td><td>1</td><td>0</td><td>0.00%</td><td>56584.00</td><td>56584</td><td>56584</td><td>56584.00</td><td>56584.00</td><td>56584.00</td><td>56584.00</td><td>0.02</td><td>0.00</td><td>0.00</td></tr><tr role="row" class="odd"><td>GETCONTEXTID</td><td>1</td><td>0</td><td>0.00%</td><td>3984.00</td><td>3984</td><td>3984</td><td>3984.00</td><td>3984.00</td><td>3984.00</td><td>3984.00</td><td>0.25</td><td>0.61</td><td>0.65</td></tr><tr role="row" class="even"><td>GETJOBDATA</td><td>1</td><td>0</td><td>0.00%</td><td>50171.00</td><td>50171</td><td>50171</td><td>50171.00</td><td>50171.00</td><td>50171.00</td><td>50171.00</td><td>0.02</td><td>0.43</td><td>0.00</td></tr><tr role="row" class="odd"><td>LOADPART</td><td>1</td><td>0</td><td>0.00%</td><td>9720.00</td><td>9720</td><td>9720</td><td>9720.00</td><td>9720.00</td><td>9720.00</td><td>9720.00</td><td>0.10</td><td>0.14</td><td>0.29</td></tr></tbody></table>
-                    </section>
+              <div class="panel panel-default">
+                <div class="panel-heading" style="text-align:center;">
+                  <p class="dashboard-title">Test and Report Information</p>
                 </div>
+                <div class="panel-body">
+                  <table class="table table-bordered table-condensed">
+                    <tbody>
+                      <tr><td>Source file</td><td>"Visualization.jtl"</td></tr>
+                      <tr><td>Start Time</td><td>"4/17/26, 2:16 PM"</td></tr>
+                      <tr><td>End Time</td><td>"4/17/26, 2:18 PM"</td></tr>
+                      <tr><td>Filter for display</td><td>""</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
+          </div>
+          
+          <!-- Summary Cards -->
+          <div class="row">
+            <div class="col-lg-3 col-md-6">
+              <div class="summary-card success">
+                <div class="value">11</div>
+                <div class="label">Total Samples</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="summary-card success">
+                <div class="value">0</div>
+                <div class="label">Errors</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="summary-card">
+                <div class="value">0.09</div>
+                <div class="label">Throughput/s</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="summary-card warning">
+                <div class="value">12.4s</div>
+                <div class="label">Avg Response</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- APDEX and Requests Summary -->
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="panel panel-default" style="text-align:center;">
+                <div class="panel-heading">
+                  <p class="dashboard-title">
+                    <a href="https://en.wikipedia.org/wiki/Apdex" target="_blank">APDEX (Application Performance Index)</a>
+                  </p>
+                </div>
+                <div class="panel-body">
+                  <table class="table table-bordered table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Apdex</th>
+                        <th>T (Toleration)</th>
+                        <th>F (Frustration)</th>
+                        <th>Label</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="apdex-poor">0.318</td><td>500 ms</td><td>1.5 sec</td><td><strong>Total</strong></td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>GETJOBDATA</td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>DMLOGINWBSSESSION</td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>DMLOGOUTWBSSESSION</td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>GENERATEACCESSTOKEN</td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>CREATEWBSSESSION</td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>LOADPART</td></tr>
+                      <tr><td class="apdex-unacceptable">0.000</td><td>500 ms</td><td>1.5 sec</td><td>GETCONTEXTID</td></tr>
+                      <tr><td class="apdex-fair">0.500</td><td>500 ms</td><td>1.5 sec</td><td>DELETEWBSSESSION</td></tr>
+                      <tr><td class="apdex-excellent">1.000</td><td>500 ms</td><td>1.5 sec</td><td>Debug Sampler</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-lg-6">
+              <div class="panel panel-default" style="text-align:center;">
+                <div class="panel-heading">
+                  <p class="dashboard-title">Requests Summary</p>
+                </div>
+                <div class="panel-body">
+                  <div class="pie-container">
+                    <div class="pie-chart">
+                      <div class="pie-center">
+                        <span class="percentage">100%</span>
+                        <span class="label">PASS</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 20px;">
+                    <span style="color: #00ff88;">● PASS: 11 (100%)</span>
+                    <span style="color: #ff6b6b; margin-left: 20px;">● FAIL: 0 (0%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Statistics Table -->
+          <div class="row">
             <div class="col-lg-12">
-                <div class="panel panel-default" style="text-align:center;">
-                    <div class="panel-heading">
-                        <p class="dashboard-title">Errors</p>
-                    </div>
-                    <div class="panel-body">
-                        <section class="col-md-12 table-responsive">
-                            <table id="errorsTable" class="table table-bordered table-condensed tablesorter tablesorter-blue" role="grid"><colgroup class="tablesorter-colgroup"></colgroup>
-                            <thead><tr role="row" class="tablesorter-headerRow"><th data-column="0" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="errorsTable" unselectable="on" aria-sort="none" aria-label="Type of error: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Type of error</div></th><th data-column="1" class="tablesorter-header tablesorter-headerDesc" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="errorsTable" unselectable="on" aria-sort="descending" aria-label="Number of errors: Descending sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Number of errors</div></th><th data-column="2" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="errorsTable" unselectable="on" aria-sort="none" aria-label="% in errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">% in errors</div></th><th data-column="3" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="errorsTable" unselectable="on" aria-sort="none" aria-label="% in all samples: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">% in all samples</div></th></tr></thead><tbody aria-live="polite" aria-relevant="all"></tbody></table>
-                        </section>
-                    </div>
+              <div class="panel panel-default" style="text-align:center;">
+                <div class="panel-heading">
+                  <p class="dashboard-title">Statistics</p>
                 </div>
+                <div class="panel-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-condensed">
+                      <thead>
+                        <tr>
+                          <th>Label</th>
+                          <th>#Samples</th>
+                          <th>FAIL</th>
+                          <th>Error %</th>
+                          <th>Average</th>
+                          <th>Min</th>
+                          <th>Max</th>
+                          <th>Median</th>
+                          <th>90th pct</th>
+                          <th>95th pct</th>
+                          <th>99th pct</th>
+                          <th>Trans/s</th>
+                          <th>Recv KB/s</th>
+                          <th>Sent KB/s</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style="font-weight: bold; background: rgba(0, 217, 255, 0.1);">
+                          <td>Total</td><td>11</td><td class="status-pass">0</td><td class="status-pass">0.00%</td>
+                          <td>12414</td><td>0</td><td>56584</td><td>3984</td>
+                          <td>55301</td><td>56584</td><td>56584</td><td>0.09</td><td>0.28</td><td>0.13</td>
+                        </tr>
+                        <tr>
+                          <td>CREATEWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>1650</td><td>1650</td><td>1650</td><td>1650</td>
+                          <td>1650</td><td>1650</td><td>1650</td><td>0.61</td><td>0.88</td><td>1.60</td>
+                        </tr>
+                        <tr>
+                          <td>Debug Sampler</td><td>3</td><td>0</td><td>0.00%</td>
+                          <td>2</td><td>0</td><td>5</td><td>1</td>
+                          <td>5</td><td>5</td><td>5</td><td>0.04</td><td>0.05</td><td>0.00</td>
+                        </tr>
+                        <tr>
+                          <td>DELETEWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>801</td><td>801</td><td>801</td><td>801</td>
+                          <td>801</td><td>801</td><td>801</td><td>1.25</td><td>1.67</td><td>3.29</td>
+                        </tr>
+                        <tr>
+                          <td>DMLOGINWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>8985</td><td>8985</td><td>8985</td><td>8985</td>
+                          <td>8985</td><td>8985</td><td>8985</td><td>0.11</td><td>0.16</td><td>0.29</td>
+                        </tr>
+                        <tr>
+                          <td>DMLOGOUTWBSSESSION</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>4655</td><td>4655</td><td>4655</td><td>4655</td>
+                          <td>4655</td><td>4655</td><td>4655</td><td>0.21</td><td>0.26</td><td>0.56</td>
+                        </tr>
+                        <tr>
+                          <td>GENERATEACCESSTOKEN</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>56584</td><td>56584</td><td>56584</td><td>56584</td>
+                          <td>56584</td><td>56584</td><td>56584</td><td>0.02</td><td>0.00</td><td>0.00</td>
+                        </tr>
+                        <tr>
+                          <td>GETCONTEXTID</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>3984</td><td>3984</td><td>3984</td><td>3984</td>
+                          <td>3984</td><td>3984</td><td>3984</td><td>0.25</td><td>0.61</td><td>0.65</td>
+                        </tr>
+                        <tr>
+                          <td>GETJOBDATA</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>50171</td><td>50171</td><td>50171</td><td>50171</td>
+                          <td>50171</td><td>50171</td><td>50171</td><td>0.02</td><td>0.43</td><td>0.00</td>
+                        </tr>
+                        <tr>
+                          <td>LOADPART</td><td>1</td><td>0</td><td>0.00%</td>
+                          <td>9720</td><td>9720</td><td>9720</td><td>9720</td>
+                          <td>9720</td><td>9720</td><td>9720</td><td>0.10</td><td>0.14</td><td>0.29</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+          
+          <!-- Errors Table -->
+          <div class="row">
             <div class="col-lg-12">
-                <div class="panel panel-default" style="text-align:center;">
-                    <div class="panel-heading">
-                        <p class="dashboard-title">Top 5 Errors by sampler</p>
-                    </div>
-                    <div class="panel-body">
-                        <section class="col-md-12 table-responsive">
-                            <table id="top5ErrorsBySamplerTable" class="table table-bordered table-condensed tablesorter tablesorter-blue" role="grid"><colgroup class="tablesorter-colgroup"></colgroup>
-                            <thead><tr role="row" class="tablesorter-headerRow"><th data-column="0" class="tablesorter-header tablesorter-headerAsc" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="ascending" aria-label="Sample: Ascending sort applied, activate to apply a descending sort" style="user-select: none;"><div class="tablesorter-header-inner">Sample</div></th><th data-column="1" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Samples: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Samples</div></th><th data-column="2" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Errors</div></th><th data-column="3" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="Error: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Error</div></th><th data-column="4" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Errors</div></th><th data-column="5" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="Error: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Error</div></th><th data-column="6" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Errors</div></th><th data-column="7" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="Error: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Error</div></th><th data-column="8" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Errors</div></th><th data-column="9" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="Error: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Error</div></th><th data-column="10" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Errors</div></th><th data-column="11" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="Error: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">Error</div></th><th data-column="12" class="tablesorter-header tablesorter-headerUnSorted" tabindex="0" scope="col" role="columnheader" aria-disabled="false" aria-controls="top5ErrorsBySamplerTable" unselectable="on" aria-sort="none" aria-label="#Errors: No sort applied, activate to apply an ascending sort" style="user-select: none;"><div class="tablesorter-header-inner">#Errors</div></th></tr></thead><tbody class="tablesorter-no-sort"><tr role="row"><td>Total</td><td>11</td><td>0</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody><tbody aria-live="polite" aria-relevant="all"></tbody></table>
-                        </section>
-                    </div>
+              <div class="panel panel-default" style="text-align:center;">
+                <div class="panel-heading">
+                  <p class="dashboard-title">Errors</p>
                 </div>
+                <div class="panel-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-condensed">
+                      <thead>
+                        <tr>
+                          <th>Type of error</th>
+                          <th>Number of errors</th>
+                          <th>% in errors</th>
+                          <th>% in all samples</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colspan="4" style="text-align: center; color: #00ff88;">
+                            <i class="fa fa-check-circle"></i> No errors recorded
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+          
+          <!-- Top 5 Errors -->
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="panel panel-default" style="text-align:center;">
+                <div class="panel-heading">
+                  <p class="dashboard-title">Top 5 Errors by Sampler</p>
+                </div>
+                <div class="panel-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-condensed">
+                      <thead>
+                        <tr>
+                          <th>Sample</th>
+                          <th>#Samples</th>
+                          <th>#Errors</th>
+                          <th colspan="10">Error Details</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style="font-weight: bold;">
+                          <td>Total</td>
+                          <td>11</td>
+                          <td class="status-pass">0</td>
+                          <td colspan="10" style="text-align: center; color: #00ff88;">
+                            <i class="fa fa-check-circle"></i> All samples passed
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div class="row" style="margin-top: 30px;">
+            <div class="col-lg-12 text-center" style="color: #5a6270;">
+              <p>Apache JMeter Dashboard • Generated on 4/17/26</p>
+              <p style="font-size: 0.8rem;">Powered by JMeter Report Generator</p>
+            </div>
+          </div>
         </div>
-    </div>
-
-    <!-- jQuery -->
-    <script src="./cacheOff_files/jquery.min.js.download"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="./cacheOff_files/bootstrap.min.js.download"></script>
-    <script src="./cacheOff_files/excanvas.min.js.download"></script>
-    <script src="./cacheOff_files/jquery.flot.js.download"></script>
-    <script src="./cacheOff_files/jquery.flot.pie.js.download"></script>
-    <script src="./cacheOff_files/jquery.flot.resize.js.download"></script>
-    <script src="./cacheOff_files/jquery.flot.time.js.download"></script>
-    <script src="./cacheOff_files/jquery.flot.tooltip.min.js.download"></script>
-    <script src="./cacheOff_files/jquery.flot.axislabels.js.download"></script>
-    <!-- Metis Menu Plugin JavaScript -->
-    <script src="./cacheOff_files/metisMenu.min.js.download"></script>
-
-    <script src="./cacheOff_files/dashboard-commons.js.download"></script>
-    <script src="./cacheOff_files/dashboard.js.download"></script>
-
-    <!-- Custom Theme JavaScript -->
-    <script src="./cacheOff_files/sb-admin-2.js.download"></script>
-    <script type="text/javascript" src="./cacheOff_files/jquery.tablesorter.min.js.download"></script>
-
-
-
-
-</div></div></div></body></html>
+      </div>
+      
+      <!-- Scripts -->
+      <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+      <script>
+        $(document).ready(function() {
+          // Toggle sidebar submenus
+          $('.sidebar-nav a').click(function(e) {
+            if ($(this).next('.nav-second-level').length) {
+              e.preventDefault();
+              $(this).next('.nav-second-level').toggleClass('collapse');
+            }
+          });
+        });
+      </script>
+    </body>
+    </html>
